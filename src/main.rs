@@ -1,4 +1,4 @@
-use std::{error::Error, fmt::Display, io, mem::MaybeUninit, task::Wake};
+use std::{error::Error, fmt::Display, io};
 
 
 #[derive(Debug)]
@@ -44,6 +44,7 @@ impl Interpeter {
     pub fn run(&mut self) -> Result<(), BrainFuckError> {
         while let Some(token) = self.tokens.get(self.instruction) {
             if self.depth > 0 {
+                self.instruction += 1;
                 match token {
                     b'[' => {
                         self.depth += 1;
