@@ -23,16 +23,43 @@ struct Interpeter {
     instruction: usize,
     loop_stack: Vec<usize>,
     tokens: Vec<u8>,
+    depth: u32,
     current: usize,
 }
 
 impl Interpeter {
     fn new(input: &str) -> Self {
-        Interpeter { memory: vec![0; 30_000], tokens: input.as_bytes().to_vec(), current: 0, instruction: 0, loop_stack: Vec::new() }
+        Interpeter { 
+            memory: vec![0; 30_000], 
+            tokens: input.as_bytes().to_vec(), 
+            current: 0, 
+            instruction: 0, 
+            loop_stack: Vec::new(), 
+            depth: 0, 
+
+        }
+        
     }
 
     pub fn run(&mut self) -> Result<(), BrainFuckError> {
         while let Some(token) = self.tokens.get(self.instruction) {
+            if self.depth > 0 {
+                match token {
+                    b'[' => {
+                        self.depth += 1;
+                        continue;
+                    }
+
+                    b']' => {
+                        self.depth -= 1;
+                        continue;
+                    }
+
+                    _=> {
+                        continue;
+                    }
+                }
+            }
             match token {
                 b'>' => {
                     self.instruction += 1;
@@ -57,8 +84,18 @@ impl Interpeter {
                 }
 
                 b'[' => {
-                    self.loop_stack.push(self.instruction + 1);
-                    self.instruction += 1;
+                        match self.memory[self.current] {
+                            0 => {
+                                self.depth += 1;
+                                self.instruction += 1;
+                                continue;
+                            }
+
+                            _=> {
+                               self.loop_stack.push(self.instruction + 1);
+                               self.instruction +=1 ;
+                            }
+                        }
                 }
 
                 b'.' => {
@@ -115,7 +152,11 @@ impl Interpeter {
 
 
 fn main() -> Result<(), BrainFuckError> {
-    let mut interpeter = Interpeter::new(",[>>+>+<<<-]>>>[<<<+>>>-]>+<<[-----[>]>>[<<<+++>>>[-]]");
+    let mut interpeter = Interpeter::new("++++[>+++++<-]>[<+++++>-]+<+[
+    >[>+>+<<-]++>>[<<+>>-]>>>[-]++>[-]+
+    >>>+[[-]++++++>>>]<<<[[<++++++++<++>>-]+<.<[>----<-]<]
+    <<[>>>>>[>>>[-]+++++++++<[>-<-]+++++++++>[-[<->-]+[<<<]]<[>+<-]>]<<-]<<-
+]");
     
 
 
